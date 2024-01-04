@@ -2,14 +2,14 @@ import { SuprSendProvider, useUnseenCount } from "@suprsend/react-inbox";
 import { ReactComponent as BellIcon } from "./assets/Bell.svg";
 import styled from "styled-components";
 import { useState } from "react";
-import { Notifications } from "./Notifications";
+import { NotificationsContainer } from "./FullScreenNotifications";
 
 const stores = [
   { storeId: "Transactional", label: "General" },
   { storeId: "System", label: "Promotional" },
 ];
 
-export default function Home() {
+export default function PopUpNotifications() {
   return (
     <SuprSendProvider
       workspaceKey={process.env.REACT_APP_WORKSPACE_KEY}
@@ -55,7 +55,7 @@ function Bell() {
 
       {show && (
         <PopOverNotifsContainer id="ss-notification-container">
-          <Notifications stores={stores} type="POPUP" />
+          <NotificationsContainer stores={stores} type="POPUP" />
         </PopOverNotifsContainer>
       )}
     </div>

@@ -7,13 +7,113 @@ import {
   SuprSendProvider,
   useStoresUnseenCount,
 } from "@suprsend/react-inbox";
-import Notification from "./components/NotificationCard";
+import NotificationCard from "./components/NotificationCard";
 
-function Loader({ size }) {
+const stores = [
+  { storeId: "Transactional", label: "General" },
+  { storeId: "System", label: "Promotional" },
+];
+
+export default function FullScreenNotifications() {
   return (
-    <SpinnerContainer>
-      <Spinner size={size} />
-    </SpinnerContainer>
+    <SuprSendProvider
+      workspaceKey={process.env.REACT_APP_WORKSPACE_KEY}
+      distinctId={process.env.REACT_APP_DISTINCT_ID}
+      subscriberId={process.env.REACT_APP_SUBSCRIBER_ID}
+      stores={stores}
+    >
+      <NotifsContainer>
+        <NotificationsContainer stores={stores} type="FULL_PAGE" />
+      </NotifsContainer>
+    </SuprSendProvider>
+  );
+}
+
+export function NotificationsContainer({ stores, type }) {
+  const [changeTab, setChangetab] = useState(false);
+  const [active, setActive] = useState(() =>
+    stores && Array.isArray(stores) && stores.length > 0
+      ? stores[0].storeId
+      : null
+  );
+  const {
+    notifications,
+    hasNext,
+    initialLoading,
+    markAllRead,
+    markClicked,
+    fetchPrevious,
+  } = useNotifications(active);
+  const unseenData = useStoresUnseenCount();
+
+  if (initialLoading) {
+    return (
+      <div>
+        <Header
+          active={active}
+          markAllRead={markAllRead}
+          stores={stores}
+          setActive={setActive}
+          setChangetab={setChangetab}
+          unseenData={unseenData}
+          type={type}
+        />
+        <InitialLoader>
+          <Loader size="large" />
+        </InitialLoader>
+      </div>
+    );
+  }
+  if (notifications?.length < 1) {
+    return (
+      <div>
+        <Header
+          active={active}
+          markAllRead={markAllRead}
+          stores={stores}
+          setActive={setActive}
+          setChangetab={setChangetab}
+          unseenData={unseenData}
+          type={type}
+        />
+        <EmptyText>No notifications yet</EmptyText>
+        <EmptySubText>
+          We'll let you know when we've got something new for you.
+        </EmptySubText>
+      </div>
+    );
+  }
+  return (
+    <div>
+      <Header
+        active={active}
+        markAllRead={markAllRead}
+        stores={stores}
+        setActive={setActive}
+        setChangetab={setChangetab}
+        unseenData={unseenData}
+        type={type}
+      />
+      {changeTab ? null : (
+        <InfiniteScroll
+          scrollableTarget="ss-notification-container"
+          dataLength={notifications.length}
+          next={fetchPrevious}
+          hasMore={hasNext}
+          loader={<Loader />}
+        >
+          {notifications.map((notification) => {
+            return (
+              <NotificationCard
+                notificationData={notification}
+                key={notification.n_id}
+                markClicked={markClicked}
+              />
+            );
+          })}
+        </InfiniteScroll>
+      )}
+    </div>
   );
 }
 
@@ -95,111 +195,11 @@ function Header({
   );
 }
 
-const stores = [
-  { storeId: "Transactional", label: "General" },
-  { storeId: "System", label: "Promotional" },
-];
-
-export default function NotificationWrapper() {
+function Loader({ size }) {
   return (
-    <SuprSendProvider
-      workspaceKey={process.env.REACT_APP_WORKSPACE_KEY}
-      distinctId={process.env.REACT_APP_DISTINCT_ID}
-      subscriberId={process.env.REACT_APP_SUBSCRIBER_ID}
-      stores={stores}
-    >
-      <NotifsContainer>
-        <Notifications stores={stores} type="FULL_PAGE" />
-      </NotifsContainer>
-    </SuprSendProvider>
-  );
-}
-
-export function Notifications({ stores, type }) {
-  const [changeTab, setChangetab] = useState(false);
-  const [active, setActive] = useState(() =>
-    stores && Array.isArray(stores) && stores.length > 0
-      ? stores[0].storeId
-      : null
-  );
-  const {
-    notifications,
-    hasNext,
-    initialLoading,
-    markAllRead,
-    markClicked,
-    fetchPrevious,
-  } = useNotifications(active);
-  const unseenData = useStoresUnseenCount();
-
-  if (initialLoading) {
-    return (
-      <div>
-        <Header
-          active={active}
-          markAllRead={markAllRead}
-          stores={stores}
-          setActive={setActive}
-          setChangetab={setChangetab}
-          unseenData={unseenData}
-          type={type}
-        />
-        <InitialLoader>
-          <Loader size="large" />
-        </InitialLoader>
-      </div>
-    );
-  }
-  if (notifications?.length < 1) {
-    return (
-      <div>
-        <Header
-          active={active}
-          markAllRead={markAllRead}
-          stores={stores}
-          setActive={setActive}
-          setChangetab={setChangetab}
-          unseenData={unseenData}
-          type={type}
-        />
-        <EmptyText>No notifications yet</EmptyText>
-        <EmptySubText>
-          We'll let you know when we've got something new for you.
-        </EmptySubText>
-      </div>
-    );
-  }
-  return (
-    <div>
-      <Header
-        active={active}
-        markAllRead={markAllRead}
-        stores={stores}
-        setActive={setActive}
-        setChangetab={setChangetab}
-        unseenData={unseenData}
-        type={type}
-      />
-      {changeTab ? null : (
-        <InfiniteScroll
-          scrollableTarget="ss-notification-container"
-          dataLength={notifications.length}
-          next={fetchPrevious}
-          hasMore={hasNext}
-          loader={<Loader />}
-        >
-          {notifications.map((notification) => {
-            return (
-              <Notification
-                notificationData={notification}
-                key={notification.n_id}
-                markClicked={markClicked}
-              />
-            );
-          })}
-        </InfiniteScroll>
-      )}
-    </div>
+    <SpinnerContainer>
+      <Spinner size={size} />
+    </SpinnerContainer>
   );
 }
 
