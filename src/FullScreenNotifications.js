@@ -8,11 +8,7 @@ import {
   useStoresUnseenCount,
 } from "@suprsend/react-inbox";
 import NotificationCard from "./components/NotificationCard";
-
-const stores = [
-  { storeId: "Transactional", label: "General" },
-  { storeId: "System", label: "Promotional" },
-];
+import { stores, tabToFilter } from "./PopUpNotifications";
 
 export default function FullScreenNotifications() {
   return (
@@ -23,7 +19,7 @@ export default function FullScreenNotifications() {
       stores={stores}
     >
       <NotifsContainer>
-        <NotificationsContainer stores={stores} type="FULL_PAGE" />
+        <NotificationsContainer type="FULL_PAGE" stores={stores} />
       </NotifsContainer>
     </SuprSendProvider>
   );
@@ -31,11 +27,13 @@ export default function FullScreenNotifications() {
 
 export function NotificationsContainer({ stores, type }) {
   const [changeTab, setChangetab] = useState(false);
+  const [filterType, setFilterType] = useState("default");
   const [active, setActive] = useState(() =>
     stores && Array.isArray(stores) && stores.length > 0
       ? stores[0].storeId
       : null
   );
+
   const {
     notifications,
     hasNext,
@@ -57,6 +55,8 @@ export function NotificationsContainer({ stores, type }) {
           setChangetab={setChangetab}
           unseenData={unseenData}
           type={type}
+          filterType={filterType}
+          setFilterType={setFilterType}
         />
         <InitialLoader>
           <Loader size="large" />
@@ -75,6 +75,8 @@ export function NotificationsContainer({ stores, type }) {
           setChangetab={setChangetab}
           unseenData={unseenData}
           type={type}
+          filterType={filterType}
+          setFilterType={setFilterType}
         />
         <EmptyText>No notifications yet</EmptyText>
         <EmptySubText>
@@ -93,6 +95,8 @@ export function NotificationsContainer({ stores, type }) {
         setChangetab={setChangetab}
         unseenData={unseenData}
         type={type}
+        filterType={filterType}
+        setFilterType={setFilterType}
       />
       {changeTab ? null : (
         <InfiniteScroll
@@ -120,13 +124,16 @@ export function NotificationsContainer({ stores, type }) {
 function Header({
   active,
   markAllRead,
-  stores,
   setActive,
   setChangetab,
   unseenData,
   type,
+  filterType,
+  setFilterType,
 }) {
   const navigator = useNavigate();
+  const tabs = tabToFilter[filterType];
+
   return (
     <div
       style={{
@@ -145,6 +152,30 @@ function Header({
         }}
       >
         <h3>Notifications</h3>
+        <p
+          onClick={() => {
+            setFilterType("default");
+            setActive(tabToFilter["default"][0].storeId);
+          }}
+        >
+          remove
+        </p>
+        <p
+          onClick={() => {
+            setFilterType("seen");
+            setActive(tabToFilter["seen"][0].storeId);
+          }}
+        >
+          Read
+        </p>
+        <p
+          onClick={() => {
+            setFilterType("unseen");
+            setActive(tabToFilter["unseen"][0].storeId);
+          }}
+        >
+          UnRead
+        </p>
         <LeftDiv>
           {type === "POPUP" && (
             <ShowAlltextText
@@ -161,35 +192,34 @@ function Header({
         </LeftDiv>
       </div>
       <TabsContainer>
-        {stores &&
-          stores?.map((store, index) => {
-            const isActiveTab = active === store.storeId;
-            const tabUnseenCount = unseenData?.[store.storeId] || 0;
-            const showBadge = tabUnseenCount > 0;
+        {tabs?.map((store, index) => {
+          const isActiveTab = active === store.storeId;
+          const tabUnseenCount = unseenData?.[store.storeId] || 0;
+          const showBadge = tabUnseenCount > 0;
 
-            return (
-              <TabContainer
-                key={index}
-                selected={isActiveTab}
-                onClick={() => {
-                  setChangetab(true);
-                  setActive(store.storeId);
-                  setTimeout(() => {
-                    setChangetab(false);
-                  }, 0);
-                }}
-              >
-                <TabText selected={isActiveTab}>{store.label}</TabText>
-                {showBadge && (
-                  <TabBadge>
-                    <TabBadgeText count={tabUnseenCount}>
-                      {tabUnseenCount}
-                    </TabBadgeText>
-                  </TabBadge>
-                )}
-              </TabContainer>
-            );
-          })}
+          return (
+            <TabContainer
+              key={index}
+              selected={isActiveTab}
+              onClick={() => {
+                setChangetab(true);
+                setActive(store.storeId);
+                setTimeout(() => {
+                  setChangetab(false);
+                }, 0);
+              }}
+            >
+              <TabText selected={isActiveTab}>{store.label}</TabText>
+              {showBadge && (
+                <TabBadge>
+                  <TabBadgeText count={tabUnseenCount}>
+                    {tabUnseenCount}
+                  </TabBadgeText>
+                </TabBadge>
+              )}
+            </TabContainer>
+          );
+        })}
       </TabsContainer>
     </div>
   );

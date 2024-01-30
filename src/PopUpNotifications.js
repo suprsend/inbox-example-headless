@@ -4,10 +4,69 @@ import styled from "styled-components";
 import { useState } from "react";
 import { NotificationsContainer } from "./FullScreenNotifications";
 
-const stores = [
-  { storeId: "Transactional", label: "General" },
-  { storeId: "System", label: "Promotional" },
+export const stores = [
+  {
+    storeId: "Transactional",
+    label: "General",
+    query: {},
+  },
+  { storeId: "System", label: "Promotional", query: { tags: "system" } },
+  {
+    storeId: "Transactional-read",
+    label: "General",
+    query: { read: true },
+  },
+  {
+    storeId: "System-read",
+    label: "Promotional",
+    query: { tags: "system", read: true },
+  },
+  {
+    storeId: "Transactional-unread",
+    label: "General",
+    query: { read: false },
+  },
+  {
+    storeId: "System-unread",
+    label: "Promotional",
+    query: { tags: "system", read: false },
+  },
 ];
+
+export const tabToFilter = {
+  default: [
+    {
+      storeId: "Transactional",
+      label: "General",
+      query: {},
+    },
+    { storeId: "System", label: "Promotional", query: { tags: "system" } },
+  ],
+  seen: [
+    {
+      storeId: "Transactional-read",
+      label: "General",
+      query: { read: true },
+    },
+    {
+      storeId: "System-read",
+      label: "Promotional",
+      query: { tags: "system", read: true },
+    },
+  ],
+  unseen: [
+    {
+      storeId: "Transactional-unread",
+      label: "General",
+      query: { read: false },
+    },
+    {
+      storeId: "System-unread",
+      label: "Promotional",
+      query: { tags: "system", read: false },
+    },
+  ],
+};
 
 export default function PopUpNotifications() {
   return (
